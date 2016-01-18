@@ -25,4 +25,4 @@ foswiki-uwc-prepare takes over these steps on all Foswiki pages in the /data fol
 
 ## License
 
-This project is licensed under the terms of the [MIT license](README.md).
+This project is licensed under the terms of the [MIT license](LICENSE.md).
