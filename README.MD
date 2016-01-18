@@ -22,3 +22,7 @@ foswiki-uwc-prepare takes over these steps on all Foswiki pages in the /data fol
 ## Usage
 
     foswiki-uwc-prepare -dir /path/to/foswiki
+
+## License
+
+This project is licensed under the terms of the [MIT license](README.md).
