@@ -14,7 +14,7 @@ func replaceAllBase64Images(fileContent *[]byte, path string) []byte {
 	var imageTagRe = regexp.MustCompile(`(?si)<img .*?src="data:image/.+?;base64,.+?".*?/>`)
 	replacedHTML := imageTagRe.ReplaceAllFunc(*fileContent, foswikiImageConverter.ReplaceBase64Tag)
 
-	return append(replacedHTML, foswikiImageConverter.MetaData()...)
+	return append(replacedHTML, foswikiImageConverter.MetaDataHTML()...)
 }
 
 // replaceAllVerbatimTags replaces all <verbatim>..</verbatim> tags to %CODE%..%ENDCODE%.

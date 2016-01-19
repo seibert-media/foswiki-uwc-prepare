@@ -15,9 +15,8 @@ import (
 )
 
 type ImageConverter struct {
-	Document   Doc
-	imageIndex int
-	images     []fImage
+	Document Doc
+	images   []fImage
 }
 
 // fImage provides the metadata of a Foswiki image
@@ -33,78 +32,97 @@ type fImage struct {
 // It returns the replaced HTML image tag as byte array.
 // The metadata of the images are saved to an array of fImage struct.
 func (c *ImageConverter) ReplaceBase64Tag(imageTag []byte) []byte {
-	var imageTagReg = regexp.MustCompile(`(?si)<img .*?src="data:image/(.+?);base64,(.+?)".*?/>`)
-	var err error
-
-	matchedParts := imageTagReg.FindSubmatch(imageTag)
+	// extract information from the HTML image tag
+	var re = regexp.MustCompile(`(?si)<img .*?src="data:image/(.+?);base64,(.+?)".*?/>`)
+	matchedParts := re.FindSubmatch(imageTag)
 	if matchedParts == nil {
 		return imageTag
 	}
+	fileExtension := string(matchedParts[1])
+	base64Data := matchedParts[2]
 
-	image := c.addNewImage()
-	image.fileName = fmt.Sprintf("base64-image%04d.%v", c.imageIndex, string(matchedParts[1]))
-
-	image.width, image.height, image.size, err = c.saveBase64Image(matchedParts[2])
+	// decode image and write to disk
+	err := c.saveBase64Image(base64Data, fileExtension)
 	if err != nil {
 		panic(err)
 	}
 
-	imageSizeAttributes := ""
-	if image.width > 0 && image.height > 0 {
-		imageSizeAttributes = fmt.Sprintf(`width="%v" height="%v" `, image.width, image.height)
-	}
-
+	// return replaced HTML image tag
 	replacedTag := fmt.Sprintf(`<img alt="" src="%%ATTACHURLPATH%%/%v/%v/%v" %v/>`,
-		c.Document.WebName(), c.Document.PageName(), image.fileName, imageSizeAttributes)
-	c.imageIndex++
+		c.Document.WebName(), c.Document.PageName(), c.lastImage().fileName, c.lastImage().dimensionHTMLAttributes())
 
 	return []byte(replacedTag)
 }
 
-func (c *ImageConverter) MetaData() []byte {
+// MetaData returns the Foswiki metadata HTML code for all decoded base64-embedded images.
+func (c *ImageConverter) MetaDataHTML() []byte {
 	metaData := ""
 	date := 1451606400 // 01.01.2016
 	username := "admin"
 	version := 1
+
 	for _, image := range c.images {
-		metaData += fmt.Sprintf(`%%META:FILEATTACHMENT{name="%v" attachment="%v" attr="" comment="" date="%v" path="%v" size="%v" stream="%v" user="%v" version="%v"}%%
-`, image.fileName, image.fileName, date, image.fileName, image.size, image.fileName, username, version)
+		metaData += fmt.Sprintf(
+			`%%META:FILEATTACHMENT{name="%v" attachment="%v" attr="" comment="" date="%v" path="%v" size="%v" stream="%v" user="%v" version="%v"}%%%v`,
+			image.fileName, image.fileName, date, image.fileName, image.size, image.fileName, username, version, "\n")
 	}
 	return []byte(metaData)
 }
 
-func (c *ImageConverter) addNewImage() *fImage {
+// newImage adds a new fImage struct to ImageConverter images array.
+// It set a filename with a counter and returns a pointer to the new fImage struct.
+func (c *ImageConverter) newImage(fileExtension string) *fImage {
 	c.images = append(c.images, fImage{})
-	return &c.images[c.imageIndex]
+	newImage := c.lastImage()
+	newImage.fileName = fmt.Sprintf("base64-image%04d.%v", len(c.images)-1, fileExtension)
+	return newImage
 }
 
-func (i *ImageConverter) saveBase64Image(base64Data []byte) (w int, h int, size int, err error) {
+// lastImage returns the last fImage struct of the ImageConverter images array.
+func (c *ImageConverter) lastImage() *fImage {
+	return &c.images[len(c.images)-1]
+}
 
+// saveBase64Image decodes a base64 byte array to a image file in the corresponding Foswiki pub folder.
+// It saves the image metadata in a new added fImage struct.
+func (c *ImageConverter) saveBase64Image(base64Data []byte, fileExtension string) error {
 	imageData, err := base64.StdEncoding.DecodeString(string(base64Data))
 	if err != nil {
-		return
+		return err
 	}
-	size = len(imageData)
 
+	// determine and save image metadata
+	newImage := c.newImage(fileExtension)
+	newImage.size = len(imageData)
 	imageReader := bytes.NewReader(imageData)
-	image, _, err := image.DecodeConfig(imageReader)
+	imageConfig, _, err := image.DecodeConfig(imageReader)
 	if err == nil {
-		w, h = image.Width, image.Height
+		newImage.width, newImage.height = imageConfig.Width, imageConfig.Height
 	}
 
-	if _, err = os.Stat(i.Document.PubDir()); err != nil {
+	// create missing pub folder structure
+	if _, err = os.Stat(c.Document.PubDir()); err != nil {
 		if os.IsNotExist(err) {
-			if err = os.MkdirAll(i.Document.PubDir(), 0755); err != nil {
-				return
+			if err = os.MkdirAll(c.Document.PubDir(), 0755); err != nil {
+				return err
 			}
 		} else {
-			return
+			return err
 		}
 	}
 
-	imageFilePath := fmt.Sprintf("%v/%v", i.Document.PubDir(), i.images[i.imageIndex].fileName)
+	// write image to disk
+	imageFilePath := fmt.Sprintf("%v/%v", c.Document.PubDir(), newImage.fileName)
 	fmt.Println("creating image", imageFilePath)
 	err = ioutil.WriteFile(filepath.Clean(imageFilePath), imageData, 0644)
 
-	return
+	return err
+}
+
+// dimensionHTMLAtrtibures returns the width and height attributes of a Foswiki fImage as HTML code.
+func (i *fImage) dimensionHTMLAttributes() string {
+	if i.width == 0 || i.height == 0 {
+		return ""
+	}
+	return fmt.Sprintf(`width="%v" height="%v" `, i.width, i.height)
 }
