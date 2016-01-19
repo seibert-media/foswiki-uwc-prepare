@@ -30,7 +30,6 @@ type fImage struct {
 // ReplaceBase64Tag replace HTML image tags with base64-embedded pictures.
 // The images are written to the corresponding Foswiki pub folders.
 // It returns the replaced HTML image tag as byte array.
-// The metadata of the images are saved to an array of fImage struct.
 func (c *ImageConverter) ReplaceBase64Tag(imageTag []byte) []byte {
 	// extract information from the HTML image tag
 	var re = regexp.MustCompile(`(?si)<img .*?src="data:image/(.+?);base64,(.+?)".*?/>`)

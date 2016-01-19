@@ -14,7 +14,7 @@ var FOSWIKI_SUBDIRS = map[string]string{
 	"PUB":  "pub",
 }
 
-// SubdirsExists check if the need Foswiki subdirectories exists.
+// SubdirsExists check if the needed Foswiki subdirectories exists.
 func (d *Dir) SubdirsExists() (bool, error) {
 	for _, subdir := range FOSWIKI_SUBDIRS {
 		subdir = filepath.Clean(d.HomePath + "/" + subdir)
