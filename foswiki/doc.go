@@ -1,21 +1,23 @@
 package foswiki
 
 import (
+	"fmt"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"fmt"
 )
 
 type Doc struct {
 	Path string
 }
 
+// PageName returns the page name of the current Foswiki document.
 func (d Doc) PageName() string {
 	// pagename = filename - extension
 	return strings.Replace(filepath.Base(d.Path), filepath.Ext(d.Path), "", 1)
 }
 
+// WebName returns the web name of the current Foswiki document.
 func (d Doc) WebName() string {
 	var pathReg = regexp.MustCompile(`.*/(.+?)/.+?\.txt`)
 	unixPath := filepath.ToSlash(d.Path)
@@ -27,6 +29,7 @@ func (d Doc) WebName() string {
 	return matchedParts[1]
 }
 
+// PubDir returns the path to the Foswiki pub folder for the current Foswiki document.
 func (d Doc) PubDir() string {
 	var pathReg = regexp.MustCompile(`(.*)/data/(.+?)/(.+?)\.txt`)
 	unixPath := filepath.ToSlash(d.Path)

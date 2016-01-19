@@ -10,6 +10,7 @@ import (
 	"github.com/seibert-media/foswiki-uwc-prepare/foswiki"
 )
 
+// processDataContent reads the Foswiki data files and saves the replaced content.
 func processDataContent(path string) error {
 	fmt.Printf("processing %v\n", path)
 
@@ -28,6 +29,7 @@ func processDataContent(path string) error {
 	return nil
 }
 
+// processDirContent calls processDataContent with the path to *.txt Foswiki data files.
 func processDirContent(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
@@ -40,6 +42,7 @@ func processDirContent(path string, info os.FileInfo, err error) error {
 	return nil
 }
 
+// startProcessing checks if the needed subdirectories exists and walk through the Foswiki data directory.
 func startProcessing(homeDir string) error {
 	foswikiDir := foswiki.Dir{homeDir}
 	if _, err := foswikiDir.SubdirsExists(); err != nil {
