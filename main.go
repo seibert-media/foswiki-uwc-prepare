@@ -13,7 +13,7 @@ func main() {
 	flag.Parse()
 
 	if len(foswikiHomeDir) == 0 {
-		fmt.Fprintln(os.Stderr, "ERROR parameter dir missing")
+		fmt.Fprintln(os.Stderr, "ERROR: parameter dir missing")
 		os.Exit(1)
 	}
 
