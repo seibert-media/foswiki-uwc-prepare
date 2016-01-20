@@ -37,9 +37,16 @@ var imageTests = []imageTest{
 	},
 }
 
+type ImageNullWriter struct{}
+
+func (*ImageNullWriter) WriteImage(string, *base64Image) error {
+	return nil
+}
+
 func TestReplaceBase64Tag(t *testing.T) {
 	for _, imageTest := range imageTests {
-		foswikiImage := ImageConverter{Document: imageTest.foswikiDoc}
+		imageNullWriter := &ImageNullWriter{}
+		foswikiImage := imageConverter{foswikiDoc: imageTest.foswikiDoc, imageWriter: imageNullWriter}
 
 		for _, imageTag := range imageTest.imageTags {
 			originBytes := []byte(imageTag.originHTML)
