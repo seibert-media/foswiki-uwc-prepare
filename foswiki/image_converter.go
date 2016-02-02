@@ -36,8 +36,8 @@ func (c *imageConverter) ReplaceBase64Tag(imageTag []byte) []byte {
 	}
 
 	// return replaced HTML image tag
-	replacedTag := fmt.Sprintf(`<img alt="" src="%%ATTACHURLPATH%%/%v/%v/%v" %v/>`,
-		c.foswikiDoc.WebName(), c.foswikiDoc.PageName(), image.fileName, image.DimensionHTMLAttributes())
+	replacedTag := fmt.Sprintf(`<img alt="" src="%%ATTACHURLPATH%%/%v" %v/>`,
+		image.fileName, image.DimensionHTMLAttributes())
 
 	return []byte(replacedTag)
 }
