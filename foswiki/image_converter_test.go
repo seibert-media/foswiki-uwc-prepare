@@ -27,10 +27,12 @@ var imageTests = []imageTest{
 	{
 		Doc{"/tmp/data/WEB_NAME2/PAGE_NAME-2.txt"},
 		[]imageTag{
-			{`<img width="123" alt="" src="data:image/gif;base64,iVBORw0KGgI=" border="0"/>`,
+			{
+				`<img width="123" alt="" src="data:image/gif;base64,iVBORw0KGgI=" border="0"/>`,
 				`<img alt="" src="%ATTACHURLPATH%/base64-image0000.gif" />`,
 			},
-			{`<img width="123" alt="" src="data:image/jpeg;base64,iVBORw0KGgI=" border="0"/>`,
+			{
+				`<img width="123" alt="" src="data:image/jpeg;base64,iVBORw0KGgI=" border="0"/>`,
 				`<img alt="" src="%ATTACHURLPATH%/base64-image0001.jpeg" />`,
 			},
 		},
