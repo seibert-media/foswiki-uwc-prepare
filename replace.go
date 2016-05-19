@@ -12,7 +12,7 @@ func replaceAllBase64Images(fileContent *[]byte, path string) []byte {
 	imageWriter := foswiki.NewBase64ImageWriter()
 	foswikiImageConverter := foswiki.NewImageConverter(foswikiDoc, imageWriter)
 
-	var imageTagRe = regexp.MustCompile(`(?si)<img .*?src="data:image/.+?;base64,.+?".*?/>`)
+	var imageTagRe = regexp.MustCompile(`(?si)<img [^>]*?src="data:image/[^;]+?;base64,[a-zA-Z0-9+/=]+?"[^>]*?/>`)
 	replacedHTML := imageTagRe.ReplaceAllFunc(*fileContent, foswikiImageConverter.ReplaceBase64Tag)
 
 	return append(replacedHTML, foswikiImageConverter.AllMetaDataHTML()...)
